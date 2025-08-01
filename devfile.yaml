@@ -12,6 +12,9 @@ components:
           targetPort: 3000
       memoryLimit: 1G
       mountSources: true
+      env:
+        - name: 'DEFAULT_EXTENSIONS'
+          value: '/tmp/copilot-chat.vsix'
 
 commands:
   - id: install-dependencies
@@ -53,3 +56,17 @@ commands:
           kill -15 ${node_server_pids} &>/dev/null && echo 'Done.'
       group:
         kind: run
+
+  - id: add-default-extensions
+    exec:
+      # name of the tooling container
+      component: tools
+      # download several extensions using curl
+      commandLine: |
+        curl https://marketplace.visualstudio.com/_apis/public/gallery/publishers/GitHub/vsextensions/copilot-chat/0.30.2025073102/vspackage --location -o /tmp/copilot-chat.vsix
+
+events:
+  postStart:
+    - add-default-extensions
+    - install-dependencies
+    
